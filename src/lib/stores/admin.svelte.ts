@@ -40,6 +40,7 @@ class AdminStore {
 
 	isCommandPaletteOpen = $state(false);
 	isTerminalLocked = $state(false);
+	secondsUntilAutoLock = $state(300);
 	isCreateProductOpen = $state(false);
 	editPriceTarget = $state<WarehouseItem | null>(null);
 	deleteProductTarget = $state<WarehouseItem | null>(null);
@@ -493,6 +494,83 @@ class AdminStore {
 
 	closeTransferModal() {
 		this.transferModalTarget = null;
+	}
+
+	hydrateSecurityPreferences(initialPinFromUrl?: string | null) {
+		if (typeof window === 'undefined') return;
+		try {
+			const savedPin = window.localStorage.getItem('tymax_admin_pin');
+			const savedTimeout = window.localStorage.getItem('tymax_admin_autolock_min');
+
+			if (initialPinFromUrl && /^\d{4,6}$/.test(initialPinFromUrl)) {
+				this.settings.terminalPin = initialPinFromUrl;
+				window.localStorage.setItem('tymax_admin_pin', initialPinFromUrl);
+			} else if (savedPin && /^\d{4,6}$/.test(savedPin)) {
+				this.settings.terminalPin = savedPin;
+			}
+
+			if (savedTimeout !== null) {
+				const parsed = Number(savedTimeout);
+				if (!Number.isNaN(parsed) && parsed >= 0) {
+					this.settings.autoLockMinutes = parsed;
+				}
+			}
+		} catch {
+			// Ignore storage errors
+		}
+		this.resetInactivityTimer();
+	}
+
+	updateSecurityPreferences(newPin: string, autoLockMinutes: number) {
+		const cleanedPin = newPin.trim();
+		if (!/^\d{4,6}$/.test(cleanedPin)) {
+			this.pushToast(
+				'Neplatný formát PINu',
+				'PIN pro rychlé zamykání musí obsahovat 4 až 6 číslic.',
+				'burgundy'
+			);
+			return false;
+		}
+
+		this.settings.terminalPin = cleanedPin;
+		this.settings.autoLockMinutes = autoLockMinutes;
+
+		if (typeof window !== 'undefined') {
+			try {
+				window.localStorage.setItem('tymax_admin_pin', cleanedPin);
+				window.localStorage.setItem('tymax_admin_autolock_min', String(autoLockMinutes));
+			} catch {
+				// Ignore storage errors
+			}
+		}
+
+		this.resetInactivityTimer();
+		this.pushToast(
+			'Nastavení zámku uloženo',
+			autoLockMinutes > 0
+				? `PIN aktualizován. Automatické zamčení při neaktivitě: ${autoLockMinutes === 0.25 ? '15 sekund' : `${autoLockMinutes} min`}.`
+				: 'PIN aktualizován. Automatické zamykání při neaktivitě je vypnuto.',
+			'emerald'
+		);
+		return true;
+	}
+
+	resetInactivityTimer() {
+		if (this.settings.autoLockMinutes <= 0) {
+			this.secondsUntilAutoLock = 0;
+			return;
+		}
+		this.secondsUntilAutoLock = Math.round(this.settings.autoLockMinutes * 60);
+	}
+
+	tickInactivitySecond() {
+		if (this.isTerminalLocked || this.settings.autoLockMinutes <= 0) return;
+		if (this.secondsUntilAutoLock > 1) {
+			this.secondsUntilAutoLock -= 1;
+		} else {
+			this.secondsUntilAutoLock = 0;
+			this.isTerminalLocked = true;
+		}
 	}
 }
 

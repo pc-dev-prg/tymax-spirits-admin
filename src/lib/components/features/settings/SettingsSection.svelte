@@ -5,6 +5,13 @@
 	import { calculateVatSnapshot, formatCzk } from '#lib/utils/format.ts';
 
 	let sampleBottlePriceCzk = $state(3490);
+	let customPin = $state(adminStore.settings.terminalPin);
+	let selectedAutoLockMinutes = $state(adminStore.settings.autoLockMinutes);
+
+	$effect(() => {
+		customPin = adminStore.settings.terminalPin;
+		selectedAutoLockMinutes = adminStore.settings.autoLockMinutes;
+	});
 
 	const simulatedCurrent = $derived(
 		calculateVatSnapshot(
@@ -13,6 +20,11 @@
 			adminStore.settings.defaultVatRatePercent
 		)
 	);
+
+	function handleSaveSecurity(event: SubmitEvent) {
+		event.preventDefault();
+		adminStore.updateSecurityPreferences(customPin, Number(selectedAutoLockMinutes));
+	}
 </script>
 
 <div class="space-y-8">
@@ -149,18 +161,89 @@
 			</div>
 		</section>
 
-		<!-- Right Column: Security, Infrastructure & Legal Checklist -->
+		<!-- Right Column: Quick-Lock PIN, Inactivity Auto-Lock & Infrastructure -->
 		<section
-			class="space-y-4 rounded-3xl border border-white/10 bg-[#110e0c] p-6 sm:p-8 xl:col-span-5"
+			class="space-y-5 rounded-3xl border border-white/10 bg-[#110e0c] p-6 sm:p-8 xl:col-span-5"
 		>
-			<span class="text-[10px] font-semibold tracking-[0.2em] text-[#d4a559] uppercase">
-				Zabezpečení &amp; Infrastruktura
-			</span>
-			<h2 class="font-serif text-2xl font-medium text-[#f4efe8]">Stav propojení a ochrany</h2>
+			<div>
+				<span class="text-[10px] font-semibold tracking-[0.2em] text-[#d4a559] uppercase">
+					Zabezpečení relace &amp; Auto-zámek
+				</span>
+				<h2 class="mt-1 font-serif text-2xl font-medium text-[#f4efe8]">
+					PIN pro rychlé zamykání a neaktivitu
+				</h2>
+			</div>
 
-			<div class="space-y-3 pt-2 text-xs">
+			<form
+				onsubmit={handleSaveSecurity}
+				class="space-y-4 rounded-2xl border border-[#d4a559]/25 bg-[#0b0908] p-4"
+			>
+				<div class="grid grid-cols-2 gap-3">
+					<div>
+						<label for="cfg-pin" class="block text-xs text-[#cfc4b4]"> Váš PIN (4–6 číslic) </label>
+						<input
+							id="cfg-pin"
+							type="password"
+							inputmode="numeric"
+							pattern="[0-9]+"
+							minlength="4"
+							maxlength="6"
+							required
+							bind:value={customPin}
+							class="mt-1.5 h-10 w-full rounded-xl border border-[#d4a559]/35 bg-[#14100d] px-3 text-center font-mono text-sm tracking-[0.35em] text-[#f0ca85] focus:border-[#f0ca85] focus:outline-none"
+						/>
+					</div>
+
+					<div>
+						<label for="cfg-autolock" class="block text-xs text-[#cfc4b4]">
+							Zamknout při neaktivitě
+						</label>
+						<select
+							id="cfg-autolock"
+							bind:value={selectedAutoLockMinutes}
+							class="mt-1.5 h-10 w-full rounded-xl border border-white/12 bg-[#14100d] px-3 text-xs text-[#f4efe8] focus:border-[#f0ca85] focus:outline-none"
+						>
+							<option value={0.25}>Za 15 sekund (Test)</option>
+							<option value={1}>Za 1 minutu</option>
+							<option value={3}>Za 3 minuty</option>
+							<option value={5}>Za 5 minut (Výchozí)</option>
+							<option value={15}>Za 15 minut</option>
+							<option value={0}>Vypnuto</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+					<button
+						type="submit"
+						class="cursor-pointer rounded-xl bg-gradient-to-r from-[#c89643] via-[#e4b86a] to-[#c89643] px-4 py-2 text-xs font-semibold tracking-[0.12em] text-[#090705] uppercase hover:brightness-110"
+					>
+						Uložit PIN &amp; Auto-zámek
+					</button>
+
+					<button
+						type="button"
+						onclick={() => (adminStore.isTerminalLocked = true)}
+						class="cursor-pointer rounded-xl border border-[#d4a559]/30 bg-[#17120e] px-3 py-2 text-xs text-[#f0ca85] hover:border-[#f0ca85]"
+					>
+						🔒 Otestovat zámek hned
+					</button>
+				</div>
+			</form>
+
+			<div class="space-y-2.5 text-xs">
 				<div
-					class="flex items-center justify-between rounded-2xl border border-white/8 bg-[#0b0908] p-4"
+					class="flex items-center justify-between rounded-2xl border border-white/8 bg-[#0b0908] p-3.5"
+				>
+					<div>
+						<div class="font-semibold text-[#f4efe8]">Ukládání hesel (Scrypt + Salt)</div>
+						<div class="mt-0.5 text-[#8a7f72]">V DB pouze hash `scrypt$salt$derivedKey`</div>
+					</div>
+					<StatusBadge tone="emerald" dot>Aktivní</StatusBadge>
+				</div>
+
+				<div
+					class="flex items-center justify-between rounded-2xl border border-white/8 bg-[#0b0908] p-3.5"
 				>
 					<div>
 						<div class="font-semibold text-[#f4efe8]">Supabase Row Level Security (RLS)</div>
@@ -170,39 +253,13 @@
 				</div>
 
 				<div
-					class="flex items-center justify-between rounded-2xl border border-white/8 bg-[#0b0908] p-4"
+					class="flex items-center justify-between rounded-2xl border border-white/8 bg-[#0b0908] p-3.5"
 				>
 					<div>
-						<div class="font-semibold text-[#f4efe8]">Polar.sh Checkout &amp; Webhooks</div>
-						<div class="mt-0.5 text-[#8a7f72]">Podpis webhooků (`POLAR_WEBHOOK_SECRET`)</div>
+						<div class="font-semibold text-[#f4efe8]">Polar.sh Checkout &amp; Product Sync</div>
+						<div class="mt-0.5 text-[#8a7f72]">REST API + podpis webhooků připraveny</div>
 					</div>
 					<StatusBadge tone="emerald" dot>Připraveno</StatusBadge>
-				</div>
-
-				<div
-					class="flex items-center justify-between rounded-2xl border border-white/8 bg-[#0b0908] p-4"
-				>
-					<div>
-						<div class="font-semibold text-[#f4efe8]">Ověření plnoletosti 18+ (ČR legislativa)</div>
-						<div class="mt-0.5 text-[#8a7f72]">Age Gate při vstupu + záznam u objednávky</div>
-					</div>
-					<StatusBadge tone="amber" dot>Aktivní</StatusBadge>
-				</div>
-
-				<div
-					class="flex items-center justify-between rounded-2xl border border-white/8 bg-[#0b0908] p-4"
-				>
-					<div>
-						<div class="font-semibold text-[#f4efe8]">PIN zámek skladového terminálu</div>
-						<div class="mt-0.5 text-[#8a7f72]">Aktuální PIN: {adminStore.settings.terminalPin}</div>
-					</div>
-					<button
-						type="button"
-						onclick={() => (adminStore.isTerminalLocked = true)}
-						class="cursor-pointer rounded-xl border border-[#d4a559]/30 bg-[#17120e] px-3 py-1.5 text-xs text-[#f0ca85] hover:border-[#f0ca85]"
-					>
-						Otestovat zámek
-					</button>
 				</div>
 			</div>
 		</section>

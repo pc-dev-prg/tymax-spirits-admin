@@ -14,7 +14,8 @@ export const INITIAL_SETTINGS: ShopSettings = {
 	requireAgeVerification18: true,
 	supabaseRlsActive: true,
 	polarWebhooksVerified: true,
-	terminalPin: '1818'
+	terminalPin: '1818',
+	autoLockMinutes: 5
 };
 
 export const INITIAL_WAREHOUSE_ITEMS: WarehouseItem[] = [

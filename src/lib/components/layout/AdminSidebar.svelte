@@ -2,6 +2,13 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { adminStore } from '#lib/stores/admin.svelte.ts';
+	import type { AdminUserSession } from '#lib/types/admin.ts';
+
+	interface Props {
+		adminUser?: AdminUserSession | null;
+	}
+
+	let { adminUser }: Props = $props();
 
 	interface NavItem {
 		href: '/' | '/sklad' | '/objednavky' | '/nastaveni';
@@ -26,6 +33,13 @@
 		},
 		{ href: '/nastaveni', label: 'DPH, PWA & Bezpečnost', shortcut: '4' }
 	]);
+
+	const formattedAutoLockCountdown = $derived.by(() => {
+		if (adminStore.settings.autoLockMinutes <= 0) return 'Vypnuto';
+		const mins = Math.floor(adminStore.secondsUntilAutoLock / 60);
+		const secs = adminStore.secondsUntilAutoLock % 60;
+		return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+	});
 
 	function isActiveRoute(href: string): boolean {
 		if (href === '/') return page.url.pathname === '/';
@@ -115,7 +129,7 @@
 	<!-- Bottom Cellar Telemetry & Security Guard Card -->
 	<div class="mt-6 hidden space-y-3 lg:block">
 		<!-- Climate & Warehouse Telemetry -->
-		<div class="rounded-2xl border border-[#d4a559]/18 bg-[#110e0c] p-4">
+		<div class="rounded-2xl border border-[#d4a559]/18 bg-[#110e0c] p-3.5">
 			<div
 				class="flex items-center justify-between text-[10px] tracking-[0.18em] text-[#a89d8e] uppercase"
 			>
@@ -126,37 +140,54 @@
 				</span>
 			</div>
 
-			<div class="mt-3 grid grid-cols-2 gap-2 border-t border-white/6 pt-3">
+			<div class="mt-2.5 grid grid-cols-2 gap-2 border-t border-white/6 pt-2.5">
 				<div>
 					<div class="text-[10px] text-[#8a7f72]">Teplota</div>
-					<div class="font-mono text-base font-semibold text-[#f4efe8] tabular-nums">
+					<div class="font-mono text-sm font-semibold text-[#f4efe8] tabular-nums">
 						{adminStore.settings.mainWarehouseTempC.toFixed(1)} °C
 					</div>
 				</div>
 				<div>
 					<div class="text-[10px] text-[#8a7f72]">Vlhkost</div>
-					<div class="font-mono text-base font-semibold text-[#f4efe8] tabular-nums">
+					<div class="font-mono text-sm font-semibold text-[#f4efe8] tabular-nums">
 						{adminStore.settings.mainWarehouseHumidityPercent} %
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<!-- Security & Session Card -->
-		<div class="rounded-2xl border border-white/8 bg-[#0e0b09] p-4">
+		<!-- Security, Auto-Lock Timer & Logout Card -->
+		<div class="rounded-2xl border border-white/8 bg-[#0e0b09] p-3.5">
 			<div class="flex items-center justify-between">
-				<div>
-					<div class="text-xs font-semibold text-[#f4efe8]">Petr Cafourek</div>
-					<div class="text-[11px] text-[#8a7f72]">Hlavní administrátor · RLS</div>
+				<div class="min-w-0">
+					<div class="truncate text-xs font-semibold text-[#f4efe8]">
+						{adminUser?.displayName ?? 'Petr Cafourek'}
+					</div>
+					<div class="text-[10px] text-[#8a7f72]">
+						@{adminUser?.username ?? 'admin'} &middot; Auto-zámek:
+						<span class="font-mono text-[#f0ca85] tabular-nums">{formattedAutoLockCountdown}</span>
+					</div>
 				</div>
+			</div>
+
+			<div class="mt-3 grid grid-cols-2 gap-2 border-t border-white/6 pt-2.5">
 				<button
 					type="button"
 					onclick={() => (adminStore.isTerminalLocked = true)}
-					title="Zamknout terminál skladu (PIN 1818)"
-					class="cursor-pointer rounded-xl border border-[#d4a559]/25 bg-[#17120e] px-2.5 py-1.5 text-[11px] text-[#f0ca85] transition-colors hover:border-[#f0ca85]"
+					title="Okamžitě uzamknout obrazovku pod PIN"
+					class="cursor-pointer rounded-xl border border-[#d4a559]/30 bg-[#17120e] px-2.5 py-1.5 text-[11px] font-medium text-[#f0ca85] transition-colors hover:border-[#f0ca85]"
 				>
-					Zamknout
+					🔒 Zamknout
 				</button>
+
+				<form method="POST" action="/odhlaseni">
+					<button
+						type="submit"
+						class="w-full cursor-pointer rounded-xl border border-white/10 bg-[#14100d] px-2.5 py-1.5 text-[11px] text-[#a89d8e] transition-colors hover:border-[#b93b53]/50 hover:text-[#f7cfd6]"
+					>
+						Odhlásit
+					</button>
+				</form>
 			</div>
 		</div>
 	</div>

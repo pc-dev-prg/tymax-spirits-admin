@@ -1,5 +1,12 @@
 <script lang="ts">
 	import { adminStore } from '#lib/stores/admin.svelte.ts';
+	import type { AdminUserSession } from '#lib/types/admin.ts';
+
+	interface Props {
+		adminUser?: AdminUserSession | null;
+	}
+
+	let { adminUser }: Props = $props();
 
 	let dialogEl: HTMLDialogElement | undefined = $state();
 	let pinInput = $state('');
@@ -22,14 +29,11 @@
 		event.preventDefault();
 		if (pinInput === adminStore.settings.terminalPin) {
 			adminStore.isTerminalLocked = false;
-			adminStore.pushToast('Terminál odemčen', 'Vítejte zpět ve velínu Tymax Spirits.', 'emerald');
+			adminStore.resetInactivityTimer();
+			adminStore.pushToast('Terminál odemčen', 'Relace obnovena pomocí vašeho PINu.', 'emerald');
 		} else {
-			errorMsg = 'Neplatný PIN (výchozí ukázkový PIN je 1818).';
+			errorMsg = 'Neplatný PIN pro odemčení relace.';
 		}
-	}
-
-	function handleInstantDemoUnlock() {
-		adminStore.isTerminalLocked = false;
 	}
 </script>
 
@@ -47,19 +51,15 @@
 	</div>
 
 	<p class="mt-4 text-[10px] tracking-[0.26em] text-[#d4a559] uppercase">
-		Zabezpečený skladový terminál
+		Rychlý zámek relace &middot; {adminUser?.displayName ?? 'Administrátor'}
 	</p>
 
 	<h1 id="lock-screen-title" class="mt-2 font-serif text-3xl font-medium text-[#f4efe8]">
-		Terminál je uzamčen
+		Administrace uzamčena
 	</h1>
 
 	<p class="mt-2 text-xs text-[#a89d8e]">
-		Pro pokračování v práci s Hlavním skladem zadejte operátorský PIN (ukázkový PIN: <strong
-			class="text-[#f0ca85]"
-		>
-			1818
-		</strong>).
+		Zadejte svůj 4–6místný PIN pro okamžité pokračování bez nutnosti nového přihlašování.
 	</p>
 
 	<form onsubmit={handleUnlock} class="mt-6 space-y-3">
@@ -84,15 +84,26 @@
 			type="submit"
 			class="h-11 w-full cursor-pointer rounded-xl bg-gradient-to-r from-[#c89643] via-[#e4b86a] to-[#c89643] text-xs font-semibold tracking-[0.16em] text-[#090705] uppercase hover:brightness-110"
 		>
-			Odemknout terminál
-		</button>
-
-		<button
-			type="button"
-			onclick={handleInstantDemoUnlock}
-			class="w-full cursor-pointer py-1.5 text-xs text-[#8a7f72] hover:text-[#f0ca85]"
-		>
-			Rychlé odemčení (Demo 1818)
+			Odemknout pomocí PINu
 		</button>
 	</form>
+
+	<div class="mt-5 flex items-center justify-between border-t border-white/8 pt-4 text-xs">
+		<button
+			type="button"
+			onclick={() => {
+				adminStore.isTerminalLocked = false;
+				adminStore.resetInactivityTimer();
+			}}
+			class="cursor-pointer text-[#8a7f72] hover:text-[#f0ca85]"
+		>
+			Demo odemčení ({adminStore.settings.terminalPin})
+		</button>
+
+		<form method="POST" action="/odhlaseni">
+			<button type="submit" class="cursor-pointer text-[#ef6b82] hover:underline">
+				Odhlásit účet →
+			</button>
+		</form>
+	</div>
 </dialog>

@@ -1,5 +1,12 @@
 export type AdminSectionId = 'overview' | 'warehouse' | 'orders' | 'settings';
 
+export interface AdminUserSession {
+	id: string;
+	username: string;
+	displayName: string;
+	role: string;
+}
+
 export type ProductCategory = 'whisky' | 'wine' | 'rum' | 'craft';
 
 export type PolarSyncStatus = 'synced' | 'mock' | 'pending' | 'error';
@@ -114,6 +121,8 @@ export interface ShopSettings {
 	supabaseRlsActive: boolean;
 	polarWebhooksVerified: boolean;
 	terminalPin: string;
+	/** Inactivity timeout in minutes before automatic PIN lock (0 = disabled, 0.25 = 15s test) */
+	autoLockMinutes: number;
 }
 
 export interface ToastMessage {
