@@ -28,7 +28,7 @@
 </script>
 
 <aside
-	class="flex flex-col justify-between border-b border-[#d4a559]/15 bg-[#0b0908] p-5 lg:w-72 lg:shrink-0 lg:border-r lg:border-b-0 lg:p-6"
+	class="flex flex-col justify-between border-b border-[#d4a559]/15 bg-[#0b0908] p-5 lg:sticky lg:top-0 lg:h-svh lg:w-72 lg:shrink-0 lg:overflow-y-auto lg:border-r lg:border-b-0 lg:p-6"
 >
 	<div>
 		<!-- Brand Header -->
