@@ -7,23 +7,42 @@ import {
 import type {
 	AdminOrder,
 	AdminSectionId,
+	CreateProductInput,
 	LedgerEntry,
 	LedgerMovementType,
 	OrderStatus,
+	PolarSyncStatus,
 	ShopSettings,
 	ToastMessage,
 	WarehouseItem
 } from '#lib/types/admin.ts';
 
+interface PolarApiResponse {
+	ok: boolean;
+	mode: 'live' | 'mock';
+	syncStatus: PolarSyncStatus;
+	polarProductId: string;
+	message: string;
+}
+
 class AdminStore {
 	activeSection = $state<AdminSectionId>('overview');
-	warehouseItems = $state<WarehouseItem[]>(structuredClone(INITIAL_WAREHOUSE_ITEMS));
+	warehouseItems = $state<WarehouseItem[]>(
+		structuredClone(INITIAL_WAREHOUSE_ITEMS).map((item) => ({
+			...item,
+			polarProductId: `plr_prod_mock_${item.sku.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+			polarSyncStatus: 'mock'
+		}))
+	);
 	ledger = $state<LedgerEntry[]>(structuredClone(INITIAL_LEDGER));
 	orders = $state<AdminOrder[]>(structuredClone(INITIAL_ORDERS));
 	settings = $state<ShopSettings>(structuredClone(INITIAL_SETTINGS));
 
 	isCommandPaletteOpen = $state(false);
 	isTerminalLocked = $state(false);
+	isCreateProductOpen = $state(false);
+	editPriceTarget = $state<WarehouseItem | null>(null);
+	deleteProductTarget = $state<WarehouseItem | null>(null);
 	transferModalTarget = $state<{
 		item: WarehouseItem;
 		mode: 'TRANSFER_TO_ESHOP' | 'RECEIPT_MAIN' | 'RETURN_TO_MAIN';
@@ -68,7 +87,7 @@ class AdminStore {
 		this.toasts.push({ id, title, detail, tone });
 		setTimeout(() => {
 			this.toasts = this.toasts.filter((t) => t.id !== id);
-		}, 4200);
+		}, 4500);
 	}
 
 	dismissToast(id: string) {
@@ -77,7 +96,7 @@ class AdminStore {
 
 	private recordLedger(params: {
 		type: LedgerMovementType;
-		item: WarehouseItem;
+		item: Pick<WarehouseItem, 'id' | 'sku' | 'name'>;
 		quantity: number;
 		mainBefore: number;
 		mainAfter: number;
@@ -89,14 +108,17 @@ class AdminStore {
 			TRANSFER_TO_ESHOP: 'TR',
 			RECEIPT_MAIN: 'RC',
 			RETURN_TO_MAIN: 'RT',
-			ORDER_DISPATCH: 'EX'
+			ORDER_DISPATCH: 'EX',
+			PRODUCT_CREATED: 'NEW',
+			PRICE_UPDATED: 'PRC',
+			PRODUCT_DELETED: 'DEL'
 		};
 		const code = `${prefixMap[params.type]}-2026-${String(this.ledger.length + 90).padStart(3, '0')}`;
 		const now = new Date();
 		const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
 		const entry: LedgerEntry = {
-			id: `led-${Date.now()}`,
+			id: `led-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
 			referenceCode: code,
 			timestamp: `Dnes · ${timeStr}`,
 			type: params.type,
@@ -114,6 +136,166 @@ class AdminStore {
 
 		this.ledger = [entry, ...this.ledger];
 		return code;
+	}
+
+	/**
+	 * Creates a new product in Main Warehouse and syncs it to Polar.sh via `/api/polar/products`.
+	 */
+	async createProduct(input: CreateProductInput) {
+		const id = `prod-${Date.now()}`;
+		let polarProductId = `plr_prod_mock_${input.sku.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+		let polarSyncStatus: PolarSyncStatus;
+		let polarMessage = 'Synchronizace s Polar.sh připravena (čeká na POLAR_ACCESS_TOKEN).';
+
+		try {
+			const res = await fetch('/api/polar/products', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					sku: input.sku,
+					name: input.name,
+					subtitle: input.subtitle,
+					retailPriceCzk: input.retailPriceCzk,
+					category: input.category,
+					origin: input.origin
+				})
+			});
+			const data = (await res.json()) as PolarApiResponse;
+			if (data.polarProductId) polarProductId = data.polarProductId;
+			polarSyncStatus = data.syncStatus;
+			polarMessage = data.message;
+		} catch {
+			polarSyncStatus = 'error';
+		}
+
+		const newItem: WarehouseItem = {
+			id,
+			sku: input.sku.trim().toUpperCase(),
+			name: input.name.trim(),
+			subtitle: input.subtitle.trim() || 'Výběrová šarže',
+			category: input.category,
+			origin: input.origin.trim() || 'Neuvedeno',
+			volumeMl: input.volumeMl,
+			abvPercent: input.abvPercent,
+			purchasePriceCzk: input.purchasePriceCzk,
+			retailPriceCzk: input.retailPriceCzk,
+			vatRatePercent: this.settings.defaultVatRatePercent,
+			mainWarehouseStock: Math.max(0, input.initialMainStock),
+			eshopStock: 0,
+			reservedStock: 0,
+			minMainThreshold: 10,
+			minEshopThreshold: 4,
+			rackLocation: input.rackLocation.trim() || 'A-99 · Příjmová zóna',
+			imageUrl: input.imageUrl,
+			polarProductId,
+			polarSyncStatus
+		};
+
+		this.warehouseItems = [newItem, ...this.warehouseItems];
+
+		const ref = this.recordLedger({
+			type: 'PRODUCT_CREATED',
+			item: newItem,
+			quantity: newItem.mainWarehouseStock,
+			mainBefore: 0,
+			mainAfter: newItem.mainWarehouseStock,
+			eshopBefore: 0,
+			eshopAfter: 0,
+			note: `Založena karta produktu + Polar.sh (${polarProductId}). Počáteční zásoba: ${newItem.mainWarehouseStock} ks.`
+		});
+
+		this.pushToast(`Nový produkt založen (${ref})`, polarMessage, 'emerald');
+		return newItem;
+	}
+
+	/**
+	 * Updates product retail/purchase price and syncs the retail price to Polar.sh.
+	 */
+	async updateProductPrice(
+		productId: string,
+		newRetailPriceCzk: number,
+		newPurchasePriceCzk: number
+	) {
+		const item = this.warehouseItems.find((i) => i.id === productId);
+		if (!item || newRetailPriceCzk <= 0) return false;
+
+		const oldRetail = item.retailPriceCzk;
+		item.retailPriceCzk = Math.round(newRetailPriceCzk);
+		item.purchasePriceCzk = Math.max(0, Math.round(newPurchasePriceCzk));
+
+		let polarMessage = 'Cena uložena a připravena pro Polar.sh.';
+
+		try {
+			const res = await fetch('/api/polar/products', {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					polarProductId: item.polarProductId,
+					sku: item.sku,
+					name: item.name,
+					retailPriceCzk: item.retailPriceCzk
+				})
+			});
+			const data = (await res.json()) as PolarApiResponse;
+			item.polarSyncStatus = data.syncStatus;
+			polarMessage = data.message;
+		} catch {
+			item.polarSyncStatus = 'error';
+		}
+
+		const ref = this.recordLedger({
+			type: 'PRICE_UPDATED',
+			item,
+			quantity: 0,
+			mainBefore: item.mainWarehouseStock,
+			mainAfter: item.mainWarehouseStock,
+			eshopBefore: item.eshopStock,
+			eshopAfter: item.eshopStock,
+			note: `Změna prodejní ceny: ${oldRetail} Kč → ${item.retailPriceCzk} Kč (Polar.sh: ${item.polarProductId ?? '—'}).`
+		});
+
+		this.pushToast(`Cena upravena (${ref})`, polarMessage, 'amber');
+		return true;
+	}
+
+	/**
+	 * Removes product from warehouse/e-shop and archives it on Polar.sh.
+	 */
+	async deleteProduct(productId: string) {
+		const item = this.warehouseItems.find((i) => i.id === productId);
+		if (!item) return false;
+
+		let polarMessage = 'Produkt odstraněn ze skladu i z Polar.sh.';
+
+		try {
+			const res = await fetch('/api/polar/products', {
+				method: 'DELETE',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					polarProductId: item.polarProductId,
+					sku: item.sku
+				})
+			});
+			const data = (await res.json()) as PolarApiResponse;
+			polarMessage = data.message;
+		} catch {
+			// Continue local removal even if offline
+		}
+
+		const ref = this.recordLedger({
+			type: 'PRODUCT_DELETED',
+			item,
+			quantity: item.mainWarehouseStock + item.eshopStock,
+			mainBefore: item.mainWarehouseStock,
+			mainAfter: 0,
+			eshopBefore: item.eshopStock,
+			eshopAfter: 0,
+			note: `Produkt vyřazen z Hlavního skladu i E-shopu a archivován na Polar.sh (${item.polarProductId ?? '—'}).`
+		});
+
+		this.warehouseItems = this.warehouseItems.filter((i) => i.id !== productId);
+		this.pushToast(`Produkt smazán (${ref})`, polarMessage, 'burgundy');
+		return true;
 	}
 
 	/**
@@ -249,7 +431,6 @@ class AdminStore {
 		order.status = next;
 
 		if (prev === 'paid' && next === 'packed') {
-			// Deduct from e-shop stock & log in ledger
 			for (const line of order.items) {
 				const whItem = this.warehouseItems.find((w) => w.sku === line.sku);
 				if (whItem && whItem.eshopStock >= line.quantity) {

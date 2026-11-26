@@ -109,7 +109,7 @@
 							title: 'Hlavní sklad · Podlimitní zásoba na E-shopu',
 							body: 'Kansai Mizunara Oak Reserve klesla na 2 ks. Doporučená převodka: +6 ks z regálu A-03.',
 							tag: 'tymax-stock-alert',
-							url: '/?sekce=warehouse',
+							url: '/sklad',
 							badgeCount: pwaStore.currentBadgeCount + 1
 						})}
 					class="cursor-pointer rounded-xl border border-white/12 bg-[#16120f] px-3.5 py-2.5 text-xs text-[#cfc4b4] hover:border-[#d4a559]/45 hover:text-[#f0ca85]"

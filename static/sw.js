@@ -84,7 +84,7 @@ self.addEventListener('push', (event) => {
 		title: 'Tymax Spirits Admin',
 		body: 'Nová událost v Hlavním skladu nebo nová objednávka.',
 		tag: 'tymax-admin-alert',
-		url: '/?sekce=orders',
+		url: '/objednavky',
 		badgeCount: 1,
 		requireInteraction: true
 	};

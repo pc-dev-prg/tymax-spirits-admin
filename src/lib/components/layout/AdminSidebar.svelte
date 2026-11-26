@@ -1,30 +1,36 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { adminStore } from '#lib/stores/admin.svelte.ts';
-	import type { AdminSectionId } from '#lib/types/admin.ts';
 
 	interface NavItem {
-		id: AdminSectionId;
+		href: '/' | '/sklad' | '/objednavky' | '/nastaveni';
 		label: string;
 		shortcut: string;
 		badge?: number;
 	}
 
 	const navItems = $derived<NavItem[]>([
-		{ id: 'overview', label: 'Velín & Přehled', shortcut: '1' },
+		{ href: '/', label: 'Velín & Přehled', shortcut: '1' },
 		{
-			id: 'warehouse',
+			href: '/sklad',
 			label: 'Hlavní sklad & Převodky',
 			shortcut: '2',
 			badge: adminStore.lowEshopStockItems.length
 		},
 		{
-			id: 'orders',
+			href: '/objednavky',
 			label: 'Objednávky & Polar.sh',
 			shortcut: '3',
 			badge: adminStore.pendingOrdersCount
 		},
-		{ id: 'settings', label: 'DPH, E-shop & Bezpečnost', shortcut: '4' }
+		{ href: '/nastaveni', label: 'DPH, PWA & Bezpečnost', shortcut: '4' }
 	]);
+
+	function isActiveRoute(href: string): boolean {
+		if (href === '/') return page.url.pathname === '/';
+		return page.url.pathname.startsWith(href);
+	}
 </script>
 
 <aside
@@ -33,7 +39,7 @@
 	<div>
 		<!-- Brand Header -->
 		<div class="flex items-center justify-between lg:block">
-			<div class="flex items-center gap-3">
+			<a href={resolve('/')} class="flex items-center gap-3">
 				<div
 					class="flex h-10 w-10 items-center justify-center rounded-xl border border-[#d4a559]/40 bg-gradient-to-br from-[#3a121b] to-[#120b0d] font-serif text-xl font-semibold text-[#f0ca85] shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
 				>
@@ -49,7 +55,7 @@
 						Sklad &amp; Velín E-shopu
 					</div>
 				</div>
-			</div>
+			</a>
 
 			<!-- Mobile Quick Command Trigger -->
 			<button
@@ -61,18 +67,17 @@
 			</button>
 		</div>
 
-		<!-- Primary Navigation -->
+		<!-- Primary URL-based Navigation -->
 		<nav
 			aria-label="Hlavní sekce administrace"
 			class="mt-6 flex gap-2 overflow-x-auto lg:mt-8 lg:flex-col"
 		>
-			{#each navItems as item (item.id)}
-				{@const isActive = adminStore.activeSection === item.id}
-				<button
-					type="button"
+			{#each navItems as item (item.href)}
+				{@const isActive = isActiveRoute(item.href)}
+				<a
+					href={resolve(item.href)}
 					aria-current={isActive ? 'page' : undefined}
-					onclick={() => (adminStore.activeSection = item.id)}
-					class={`group relative flex shrink-0 cursor-pointer items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-left text-xs font-medium transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f0ca85] lg:w-full ${
+					class={`group relative flex shrink-0 items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-left text-xs font-medium transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f0ca85] lg:w-full ${
 						isActive
 							? 'border-[#d4a559]/50 bg-gradient-to-r from-[#1d1612] to-[#130f0c] text-[#f0ca85] shadow-[0_10px_25px_rgba(0,0,0,0.5)]'
 							: 'border-transparent text-[#a89d8e] hover:border-white/8 hover:bg-[#14100d] hover:text-[#f4efe8]'
@@ -102,7 +107,7 @@
 							Alt+{item.shortcut}
 						</kbd>
 					</span>
-				</button>
+				</a>
 			{/each}
 		</nav>
 	</div>

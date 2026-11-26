@@ -2,6 +2,8 @@ export type AdminSectionId = 'overview' | 'warehouse' | 'orders' | 'settings';
 
 export type ProductCategory = 'whisky' | 'wine' | 'rum' | 'craft';
 
+export type PolarSyncStatus = 'synced' | 'mock' | 'pending' | 'error';
+
 export interface WarehouseItem {
 	id: string;
 	sku: string;
@@ -23,10 +25,36 @@ export interface WarehouseItem {
 	minMainThreshold: number;
 	minEshopThreshold: number;
 	rackLocation: string;
+	/** Uploaded photo preview (Data URL now, Supabase Storage URL once connected) */
+	imageUrl?: string;
+	/** Linked product ID on Polar.sh */
+	polarProductId?: string;
+	polarSyncStatus?: PolarSyncStatus;
+}
+
+export interface CreateProductInput {
+	sku: string;
+	name: string;
+	subtitle: string;
+	category: ProductCategory;
+	origin: string;
+	volumeMl: number;
+	abvPercent: number;
+	purchasePriceCzk: number;
+	retailPriceCzk: number;
+	initialMainStock: number;
+	rackLocation: string;
+	imageUrl?: string;
 }
 
 export type LedgerMovementType =
-	'TRANSFER_TO_ESHOP' | 'RECEIPT_MAIN' | 'RETURN_TO_MAIN' | 'ORDER_DISPATCH';
+	| 'TRANSFER_TO_ESHOP'
+	| 'RECEIPT_MAIN'
+	| 'RETURN_TO_MAIN'
+	| 'ORDER_DISPATCH'
+	| 'PRODUCT_CREATED'
+	| 'PRICE_UPDATED'
+	| 'PRODUCT_DELETED';
 
 export interface LedgerEntry {
 	id: string;

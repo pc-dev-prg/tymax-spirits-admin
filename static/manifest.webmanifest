@@ -50,21 +50,21 @@
 			"name": "Hlavní sklad & Převodky",
 			"short_name": "Sklad",
 			"description": "Otevřít dvoustupňový sklad a převodky na e-shop",
-			"url": "/?sekce=warehouse",
+			"url": "/sklad",
 			"icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
 		},
 		{
 			"name": "Objednávky k expedici",
 			"short_name": "Objednávky",
 			"description": "Zobrazit zaplacené objednávky z Polar.sh",
-			"url": "/?sekce=orders",
+			"url": "/objednavky",
 			"icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
 		},
 		{
 			"name": "DPH & Notifikace",
 			"short_name": "Nastavení",
 			"description": "Správa Web Push notifikací a režimu DPH",
-			"url": "/?sekce=settings",
+			"url": "/nastaveni",
 			"icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
 		}
 	]

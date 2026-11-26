@@ -1,5 +1,6 @@
+import { goto } from '$app/navigation';
+import { resolve } from '$app/paths';
 import { adminStore } from '#lib/stores/admin.svelte.ts';
-import type { AdminSectionId } from '#lib/types/admin.ts';
 
 interface BeforeInstallPromptEvent extends Event {
 	prompt: () => Promise<void>;
@@ -101,10 +102,10 @@ class PwaStore {
 				const data = event.data as { type?: string; url?: string } | undefined;
 				if (data?.type === 'NOTIFICATION_CLICKED' && data.url) {
 					const parsed = new URL(data.url, window.location.origin);
-					const sekce = parsed.searchParams.get('sekce') as AdminSectionId | null;
-					if (sekce) {
-						adminStore.activeSection = sekce;
-					}
+					if (parsed.pathname === '/sklad') void goto(resolve('/sklad'));
+					else if (parsed.pathname === '/objednavky') void goto(resolve('/objednavky'));
+					else if (parsed.pathname === '/nastaveni') void goto(resolve('/nastaveni'));
+					else void goto(resolve('/'));
 				}
 			});
 		}
@@ -240,7 +241,7 @@ class PwaStore {
 				title: 'Tymax Admin · Web Push aktivní',
 				body: 'Notifikace ze skladu a objednávek Polar.sh budou doručovány i při zamčeném telefonu.',
 				tag: 'tymax-welcome-push',
-				url: '/?sekce=overview',
+				url: '/',
 				badgeCount: this.currentBadgeCount || 1
 			});
 
@@ -354,7 +355,7 @@ class PwaStore {
 			title: 'Nová objednávka #TYM-2026-416 (9 380 Kč)',
 			body: 'Zaplaceno přes Polar.sh (18+ ověřeno). K vyskladnění: Highland Smoke 18 YO + Glen Spey 21 YO.',
 			tag: 'tymax-lockscreen-test',
-			url: '/?sekce=orders',
+			url: '/objednavky',
 			badgeCount: nextBadge,
 			delayMs: 5000
 		});

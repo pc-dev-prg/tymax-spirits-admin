@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { adminStore } from '#lib/stores/admin.svelte.ts';
 	import { pwaStore } from '#lib/stores/pwa.svelte.ts';
 	import { formatCzk } from '#lib/utils/format.ts';
@@ -38,10 +39,9 @@
 		<!-- Right: Live Warehouse Counters & Active VAT Regime Pill -->
 		<div class="flex flex-wrap items-center gap-2.5">
 			<!-- Main Warehouse Pill -->
-			<button
-				type="button"
-				onclick={() => (adminStore.activeSection = 'warehouse')}
-				class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-[#110e0c] px-3 py-1.5 text-xs transition-colors hover:border-[#d4a559]/40"
+			<a
+				href={resolve('/sklad')}
+				class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-[#110e0c] px-3 py-1.5 text-xs transition-colors hover:border-[#d4a559]/40"
 			>
 				<span class="text-[#8a7f72]">Hlavní sklad:</span>
 				<span class="font-mono font-semibold text-[#f4efe8] tabular-nums">
@@ -50,26 +50,24 @@
 				<span class="hidden text-[11px] text-[#8a7f72] xl:inline">
 					({formatCzk(adminStore.mainWarehouseValueCzk)})
 				</span>
-			</button>
+			</a>
 
 			<!-- E-shop Stock Pill -->
-			<button
-				type="button"
-				onclick={() => (adminStore.activeSection = 'warehouse')}
-				class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-[#110e0c] px-3 py-1.5 text-xs transition-colors hover:border-[#d4a559]/40"
+			<a
+				href={resolve('/sklad')}
+				class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-[#110e0c] px-3 py-1.5 text-xs transition-colors hover:border-[#d4a559]/40"
 			>
 				<span class="text-[#8a7f72]">Sklad e-shopu:</span>
 				<span class="font-mono font-semibold text-emerald-400 tabular-nums">
 					{adminStore.totalEshopBottles} ks
 				</span>
-			</button>
+			</a>
 
 			<!-- PWA Push & App Icon Badge Quick Control -->
-			<button
-				type="button"
-				onclick={() => (adminStore.activeSection = 'settings')}
+			<a
+				href={resolve('/nastaveni')}
 				title="Správa PWA instalace, Web Push notifikací a odznaku na ikoně"
-				class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-[#d4a559]/30 bg-[#15110e] px-3 py-1.5 text-xs text-[#f0ca85] transition-colors hover:border-[#f0ca85]"
+				class="inline-flex items-center gap-2 rounded-xl border border-[#d4a559]/30 bg-[#15110e] px-3 py-1.5 text-xs text-[#f0ca85] transition-colors hover:border-[#f0ca85]"
 			>
 				<span
 					class={`h-2 w-2 rounded-full ${
@@ -85,7 +83,7 @@
 						{pwaStore.currentBadgeCount}
 					</span>
 				{/if}
-			</button>
+			</a>
 
 			<!-- Active VAT Regime Indicator & Instant Switch -->
 			<button

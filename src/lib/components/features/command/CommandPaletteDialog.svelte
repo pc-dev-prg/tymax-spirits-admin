@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { adminStore } from '#lib/stores/admin.svelte.ts';
 
 	let dialogEl: HTMLDialogElement | undefined = $state();
@@ -85,6 +87,19 @@
 			<div class="mt-2 grid gap-1.5 sm:grid-cols-2">
 				<button
 					type="button"
+					onclick={() =>
+						runAction(() => {
+							void goto(resolve('/sklad'));
+							adminStore.isCreateProductOpen = true;
+						})}
+					class="flex cursor-pointer items-center justify-between rounded-xl border border-[#d4a559]/30 bg-[#19130e] px-3.5 py-2.5 text-left text-xs text-[#f0ca85] hover:border-[#f0ca85]"
+				>
+					<span>+ Přidat nový produkt (s fotkou + Polar.sh)</span>
+					<span class="font-mono text-[10px]">NEW</span>
+				</button>
+
+				<button
+					type="button"
 					onclick={() => runAction(() => adminStore.toggleVatPayer())}
 					class="flex cursor-pointer items-center justify-between rounded-xl border border-white/8 bg-[#16120f] px-3.5 py-2.5 text-left text-xs hover:border-[#d4a559]/45"
 				>
@@ -94,7 +109,7 @@
 
 				<button
 					type="button"
-					onclick={() => runAction(() => (adminStore.activeSection = 'warehouse'))}
+					onclick={() => runAction(() => void goto(resolve('/sklad')))}
 					class="flex cursor-pointer items-center justify-between rounded-xl border border-white/8 bg-[#16120f] px-3.5 py-2.5 text-left text-xs hover:border-[#d4a559]/45"
 				>
 					<span>Otevřít Hlavní sklad &amp; Převodky</span>
@@ -103,7 +118,7 @@
 
 				<button
 					type="button"
-					onclick={() => runAction(() => (adminStore.activeSection = 'orders'))}
+					onclick={() => runAction(() => void goto(resolve('/objednavky')))}
 					class="flex cursor-pointer items-center justify-between rounded-xl border border-white/8 bg-[#16120f] px-3.5 py-2.5 text-left text-xs hover:border-[#d4a559]/45"
 				>
 					<span>Zobrazit objednávky k expedici ({adminStore.pendingOrdersCount})</span>
@@ -154,7 +169,7 @@
 								type="button"
 								onclick={() =>
 									runAction(() => {
-										adminStore.activeSection = 'warehouse';
+										void goto(resolve('/sklad'));
 										adminStore.openTransferModal(item, 'TRANSFER_TO_ESHOP');
 									})}
 								class="cursor-pointer rounded-lg border border-[#d4a559]/30 bg-[#17120e] px-2.5 py-1 text-[11px] text-[#f0ca85] hover:border-[#f0ca85]"

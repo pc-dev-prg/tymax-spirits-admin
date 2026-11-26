@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import StatusBadge from '#lib/components/ui/StatusBadge.svelte';
 	import { adminStore } from '#lib/stores/admin.svelte.ts';
 	import { calculateVatSnapshot, formatCzk } from '#lib/utils/format.ts';
@@ -25,13 +26,12 @@
 		</div>
 
 		<div class="flex flex-wrap items-center gap-2.5">
-			<button
-				type="button"
-				onclick={() => (adminStore.activeSection = 'warehouse')}
-				class="cursor-pointer rounded-xl bg-gradient-to-r from-[#c89643] via-[#e4b86a] to-[#c89643] px-4 py-2.5 text-xs font-semibold tracking-[0.12em] text-[#090705] uppercase shadow-[0_10px_25px_rgba(212,165,89,0.2)] hover:brightness-110"
+			<a
+				href={resolve('/sklad')}
+				class="rounded-xl bg-gradient-to-r from-[#c89643] via-[#e4b86a] to-[#c89643] px-4 py-2.5 text-xs font-semibold tracking-[0.12em] text-[#090705] uppercase shadow-[0_10px_25px_rgba(212,165,89,0.2)] hover:brightness-110"
 			>
 				Nová převodka na E-shop →
-			</button>
+			</a>
 		</div>
 	</div>
 
@@ -91,13 +91,9 @@
 		<div class="rounded-2xl border border-[#d4a559]/22 bg-[#110e0c] p-5">
 			<div class="flex items-center justify-between">
 				<span class="text-[11px] tracking-[0.16em] text-[#a89d8e] uppercase">Daňový režim</span>
-				<button
-					type="button"
-					onclick={() => (adminStore.activeSection = 'settings')}
-					class="cursor-pointer text-[11px] text-[#d4a559] hover:text-[#f0ca85]"
-				>
+				<a href={resolve('/nastaveni')} class="text-[11px] text-[#d4a559] hover:text-[#f0ca85]">
 					Nastavit →
-				</button>
+				</a>
 			</div>
 			<div class="mt-3 font-serif text-2xl font-semibold text-[#f4efe8]">
 				{adminStore.settings.isVatPayer ? 'Plátce DPH (21 %)' : 'Neplátce DPH'}
@@ -155,13 +151,12 @@
 					</span>
 					<span class="h-px flex-1 bg-gradient-to-r from-emerald-400 to-emerald-500"></span>
 				</div>
-				<button
-					type="button"
-					onclick={() => (adminStore.activeSection = 'warehouse')}
-					class="cursor-pointer text-[11px] text-[#a89d8e] underline decoration-[#d4a559]/50 underline-offset-4 hover:text-[#f0ca85]"
+				<a
+					href={resolve('/sklad')}
+					class="text-[11px] text-[#a89d8e] underline decoration-[#d4a559]/50 underline-offset-4 hover:text-[#f0ca85]"
 				>
 					Otevřít převodkový pult ({adminStore.ledger.length} záznamů)
-				</button>
+				</a>
 			</div>
 
 			<!-- Node 2: E-shop Stock & Reservations -->
@@ -200,13 +195,9 @@
 						Lahve k doplnění na E-shop ({adminStore.lowEshopStockItems.length})
 					</h2>
 				</div>
-				<button
-					type="button"
-					onclick={() => (adminStore.activeSection = 'warehouse')}
-					class="cursor-pointer text-xs text-[#d4a559] hover:text-[#f0ca85]"
-				>
+				<a href={resolve('/sklad')} class="text-xs text-[#d4a559] hover:text-[#f0ca85]">
 					Celý sklad →
-				</button>
+				</a>
 			</div>
 
 			{#if adminStore.lowEshopStockItems.length === 0}
@@ -261,13 +252,9 @@
 						Poslední pohyby ve skladu
 					</h2>
 				</div>
-				<button
-					type="button"
-					onclick={() => (adminStore.activeSection = 'warehouse')}
-					class="cursor-pointer text-xs text-[#d4a559] hover:text-[#f0ca85]"
-				>
+				<a href={resolve('/sklad')} class="text-xs text-[#d4a559] hover:text-[#f0ca85]">
 					Celý deník →
-				</button>
+				</a>
 			</div>
 
 			<div class="mt-4 divide-y divide-white/8">
@@ -284,6 +271,12 @@
 									<StatusBadge tone="amber">
 										Příjem na Hlavní sklad (+{entry.quantity} ks)
 									</StatusBadge>
+								{:else if entry.type === 'PRODUCT_CREATED'}
+									<StatusBadge tone="emerald">Nový produkt + Polar.sh</StatusBadge>
+								{:else if entry.type === 'PRICE_UPDATED'}
+									<StatusBadge tone="amber">Změna ceny + Polar.sh</StatusBadge>
+								{:else if entry.type === 'PRODUCT_DELETED'}
+									<StatusBadge tone="burgundy">Smazáno + Polar.sh</StatusBadge>
 								{:else if entry.type === 'RETURN_TO_MAIN'}
 									<StatusBadge tone="slate">
 										Vratka → Hlavní sklad ({entry.quantity} ks)
