@@ -126,36 +126,8 @@
 		</nav>
 	</div>
 
-	<!-- Bottom Cellar Telemetry & Security Guard Card -->
-	<div class="mt-6 hidden space-y-3 lg:block">
-		<!-- Climate & Warehouse Telemetry -->
-		<div class="rounded-2xl border border-[#d4a559]/18 bg-[#110e0c] p-3.5">
-			<div
-				class="flex items-center justify-between text-[10px] tracking-[0.18em] text-[#a89d8e] uppercase"
-			>
-				<span>Hlavní sklad · Čidla</span>
-				<span class="inline-flex items-center gap-1 text-emerald-400">
-					<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-					<span>ONLINE</span>
-				</span>
-			</div>
-
-			<div class="mt-2.5 grid grid-cols-2 gap-2 border-t border-white/6 pt-2.5">
-				<div>
-					<div class="text-[10px] text-[#8a7f72]">Teplota</div>
-					<div class="font-mono text-sm font-semibold text-[#f4efe8] tabular-nums">
-						{adminStore.settings.mainWarehouseTempC.toFixed(1)} °C
-					</div>
-				</div>
-				<div>
-					<div class="text-[10px] text-[#8a7f72]">Vlhkost</div>
-					<div class="font-mono text-sm font-semibold text-[#f4efe8] tabular-nums">
-						{adminStore.settings.mainWarehouseHumidityPercent} %
-					</div>
-				</div>
-			</div>
-		</div>
-
+	<!-- Bottom Security Guard Card -->
+	<div class="mt-6 hidden lg:block">
 		<!-- Security, Auto-Lock Timer & Logout Card -->
 		<div class="rounded-2xl border border-white/8 bg-[#0e0b09] p-3.5">
 			<div class="flex items-center justify-between gap-2">
