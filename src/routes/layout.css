@@ -1,1 +1,93 @@
 @import 'tailwindcss';
+
+@theme {
+	--font-serif: 'Cormorant Garamond', Georgia, serif;
+	--font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+	color-scheme: dark;
+	--brand-color: #d4a559;
+}
+
+body {
+	font-family: var(--font-sans);
+	background-color: #080707;
+	color: #f4efe8;
+	accent-color: var(--brand-color);
+	overflow-x: clip;
+}
+
+.tabular-nums {
+	font-variant-numeric: tabular-nums;
+}
+
+/* Native <dialog> modal scroll containment (modern-web-guidance: dialog & prevent-page-scroll-under-modal-dialog) */
+dialog:modal {
+	overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+	overflow: hidden;
+	overscroll-behavior: contain;
+	background: rgba(6, 5, 5, 0.72);
+	backdrop-filter: blur(8px);
+}
+
+dialog.lock-dialog::backdrop {
+	background: radial-gradient(circle at 50% 35%, rgba(42, 16, 22, 0.94), rgba(5, 4, 4, 0.98));
+	backdrop-filter: blur(18px);
+}
+
+/* Responsive Data Table with Container Query Stacked Fallback (modern-web-guidance: responsive-table) */
+.table-region {
+	overflow: auto;
+	max-inline-size: 100%;
+	container-type: inline-size;
+}
+
+.table-region table {
+	border-collapse: separate;
+	border-spacing: 0;
+	width: 100%;
+}
+
+.table-region thead {
+	position: sticky;
+	inset-block-start: 0;
+	z-index: 2;
+}
+
+@container (width < 680px) {
+	.responsive-data-table,
+	.responsive-data-table thead,
+	.responsive-data-table tbody,
+	.responsive-data-table tr,
+	.responsive-data-table th,
+	.responsive-data-table td {
+		display: block;
+	}
+
+	.responsive-data-table thead {
+		display: none;
+	}
+
+	.responsive-data-table tbody tr {
+		margin-block-end: 0.85rem;
+		border: 1px solid rgba(212, 165, 89, 0.2);
+		border-radius: 1rem;
+		background: #110e0c;
+		padding: 0.75rem;
+	}
+
+	.responsive-data-table td[data-label]::before {
+		content: attr(data-label) ': ';
+		font-size: 0.68rem;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: #9e9385;
+		display: inline-block;
+		margin-right: 0.5rem;
+	}
+}
