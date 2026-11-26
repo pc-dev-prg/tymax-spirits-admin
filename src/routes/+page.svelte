@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import CommandPaletteDialog from '#lib/components/features/command/CommandPaletteDialog.svelte';
 	import OverviewSection from '#lib/components/features/dashboard/OverviewSection.svelte';
 	import OrdersSection from '#lib/components/features/orders/OrdersSection.svelte';
@@ -10,6 +12,29 @@
 	import AdminTopbar from '#lib/components/layout/AdminTopbar.svelte';
 	import ToastContainer from '#lib/components/ui/ToastContainer.svelte';
 	import { adminStore } from '#lib/stores/admin.svelte.ts';
+	import { pwaStore } from '#lib/stores/pwa.svelte.ts';
+	import type { AdminSectionId } from '#lib/types/admin.ts';
+
+	onMount(() => {
+		pwaStore.init();
+		const sekce = page.url.searchParams.get('sekce') as AdminSectionId | null;
+		if (
+			sekce === 'overview' ||
+			sekce === 'warehouse' ||
+			sekce === 'orders' ||
+			sekce === 'settings'
+		) {
+			adminStore.activeSection = sekce;
+		}
+	});
+
+	// Keep the installed PWA app icon badge automatically synced with pending tasks
+	$effect(() => {
+		const taskCount = adminStore.pendingOrdersCount + adminStore.lowEshopStockItems.length;
+		if (pwaStore.autoSyncBadge) {
+			void pwaStore.setAppBadgeCount(taskCount);
+		}
+	});
 
 	function handleGlobalKeydown(event: KeyboardEvent) {
 		if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
@@ -33,7 +58,7 @@
 	<title>Tymax Spirits Admin — Hlavní sklad &amp; Velín e-shopu</title>
 	<meta
 		name="description"
-		content="Zabezpečené administrační rozhraní Tymax Spirits pro správu Hlavního skladu, převodek na e-shop, objednávek a režimu DPH."
+		content="Zabezpečená PWA aplikace Tymax Spirits pro správu Hlavního skladu, převodek na e-shop, objednávek a režimu DPH."
 	/>
 </svelte:head>
 

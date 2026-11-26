@@ -1,4 +1,5 @@
 <script lang="ts">
+	import PwaNotificationCenter from '#lib/components/features/pwa/PwaNotificationCenter.svelte';
 	import StatusBadge from '#lib/components/ui/StatusBadge.svelte';
 	import { adminStore } from '#lib/stores/admin.svelte.ts';
 	import { calculateVatSnapshot, formatCzk } from '#lib/utils/format.ts';
@@ -20,9 +21,12 @@
 			Konfigurace systému &amp; Daňový režim
 		</p>
 		<h1 class="mt-1 font-serif text-3xl font-medium text-[#f4efe8] sm:text-4xl">
-			Nastavení DPH, E-shopu &amp; Bezpečnosti
+			Nastavení PWA, Notifikací, DPH &amp; Bezpečnosti
 		</h1>
 	</div>
+
+	<!-- PWA, Web Push & App Icon Badging Control Center -->
+	<PwaNotificationCenter />
 
 	<div class="grid gap-6 xl:grid-cols-12">
 		<!-- Left Column: VAT Payer Switch & Live Tax Receipt Simulator -->

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { adminStore } from '#lib/stores/admin.svelte.ts';
+	import { pwaStore } from '#lib/stores/pwa.svelte.ts';
 	import { formatCzk } from '#lib/utils/format.ts';
 </script>
 
@@ -61,6 +62,29 @@
 				<span class="font-mono font-semibold text-emerald-400 tabular-nums">
 					{adminStore.totalEshopBottles} ks
 				</span>
+			</button>
+
+			<!-- PWA Push & App Icon Badge Quick Control -->
+			<button
+				type="button"
+				onclick={() => (adminStore.activeSection = 'settings')}
+				title="Správa PWA instalace, Web Push notifikací a odznaku na ikoně"
+				class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-[#d4a559]/30 bg-[#15110e] px-3 py-1.5 text-xs text-[#f0ca85] transition-colors hover:border-[#f0ca85]"
+			>
+				<span
+					class={`h-2 w-2 rounded-full ${
+						pwaStore.pushSubscribed ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-[#d4a559]'
+					}`}
+					aria-hidden="true"
+				></span>
+				<span>{pwaStore.pushSubscribed ? 'Push aktivní' : 'PWA & Push'}</span>
+				{#if pwaStore.currentBadgeCount > 0}
+					<span
+						class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#d92b4b] px-1.5 font-mono text-[10px] font-bold text-white tabular-nums"
+					>
+						{pwaStore.currentBadgeCount}
+					</span>
+				{/if}
 			</button>
 
 			<!-- Active VAT Regime Indicator & Instant Switch -->

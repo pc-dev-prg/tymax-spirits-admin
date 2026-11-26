@@ -1,0 +1,71 @@
+{
+	"id": "/",
+	"name": "Tymax Spirits Admin — Hlavní sklad & Velín",
+	"short_name": "Tymax Admin",
+	"description": "Zabezpečená PWA aplikace pro správu Hlavního skladu, převodek na e-shop, objednávek Polar.sh a daňového režimu DPH.",
+	"lang": "cs",
+	"dir": "ltr",
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"display_override": ["window-controls-overlay", "standalone"],
+	"orientation": "any",
+	"background_color": "#080707",
+	"theme_color": "#080707",
+	"categories": ["business", "productivity", "finance"],
+	"icons": [
+		{
+			"src": "/icons/icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "/icons/icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "/icons/icon-maskable-192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "maskable"
+		},
+		{
+			"src": "/icons/icon-maskable-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		},
+		{
+			"src": "/icons/badge-monochrome-96.png",
+			"sizes": "96x96",
+			"type": "image/png",
+			"purpose": "monochrome"
+		}
+	],
+	"shortcuts": [
+		{
+			"name": "Hlavní sklad & Převodky",
+			"short_name": "Sklad",
+			"description": "Otevřít dvoustupňový sklad a převodky na e-shop",
+			"url": "/?sekce=warehouse",
+			"icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+		},
+		{
+			"name": "Objednávky k expedici",
+			"short_name": "Objednávky",
+			"description": "Zobrazit zaplacené objednávky z Polar.sh",
+			"url": "/?sekce=orders",
+			"icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+		},
+		{
+			"name": "DPH & Notifikace",
+			"short_name": "Nastavení",
+			"description": "Správa Web Push notifikací a režimu DPH",
+			"url": "/?sekce=settings",
+			"icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+		}
+	]
+}
