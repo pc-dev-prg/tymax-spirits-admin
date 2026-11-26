@@ -158,36 +158,64 @@
 
 		<!-- Security, Auto-Lock Timer & Logout Card -->
 		<div class="rounded-2xl border border-white/8 bg-[#0e0b09] p-3.5">
-			<div class="flex items-center justify-between">
+			<div class="flex items-center justify-between gap-2">
 				<div class="min-w-0">
 					<div class="truncate text-xs font-semibold text-[#f4efe8]">
 						{adminUser?.displayName ?? 'Petr Cafourek'}
 					</div>
-					<div class="text-[10px] text-[#8a7f72]">
-						@{adminUser?.username ?? 'admin'} &middot; Auto-zámek:
+					<div class="truncate text-[10px] text-[#8a7f72]">
+						@{adminUser?.username ?? 'admin'} &middot;
 						<span class="font-mono text-[#f0ca85] tabular-nums">{formattedAutoLockCountdown}</span>
 					</div>
 				</div>
-			</div>
 
-			<div class="mt-3 grid grid-cols-2 gap-2 border-t border-white/6 pt-2.5">
-				<button
-					type="button"
-					onclick={() => (adminStore.isTerminalLocked = true)}
-					title="Okamžitě uzamknout obrazovku pod PIN"
-					class="cursor-pointer rounded-xl border border-[#d4a559]/30 bg-[#17120e] px-2.5 py-1.5 text-[11px] font-medium text-[#f0ca85] transition-colors hover:border-[#f0ca85]"
-				>
-					🔒 Zamknout
-				</button>
-
-				<form method="POST" action="/odhlaseni">
+				<div class="flex shrink-0 items-center gap-1.5">
 					<button
-						type="submit"
-						class="w-full cursor-pointer rounded-xl border border-white/10 bg-[#14100d] px-2.5 py-1.5 text-[11px] text-[#a89d8e] transition-colors hover:border-[#b93b53]/50 hover:text-[#f7cfd6]"
+						type="button"
+						onclick={() => (adminStore.isTerminalLocked = true)}
+						title="Zamknout terminál pod PIN (⌘L)"
+						aria-label="Zamknout terminál"
+						class="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl border border-[#d4a559]/30 bg-[#17120e] text-[#f0ca85] transition-colors hover:border-[#f0ca85] hover:bg-[#1f1812] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f0ca85]"
 					>
-						Odhlásit
+						<svg
+							class="h-4 w-4"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.8"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							<rect x="4" y="11" width="16" height="10" rx="2" />
+							<path d="M8 11V7a4 4 0 0 1 8 0v4" />
+						</svg>
 					</button>
-				</form>
+
+					<form method="POST" action="/odhlaseni">
+						<button
+							type="submit"
+							title="Odhlásit se z administrace"
+							aria-label="Odhlásit se"
+							class="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-[#14100d] text-[#a89d8e] transition-colors hover:border-[#b93b53]/50 hover:text-[#f7cfd6] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f0ca85]"
+						>
+							<svg
+								class="h-4 w-4"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="1.8"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+							>
+								<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+								<polyline points="16 17 21 12 16 7" />
+								<line x1="21" y1="12" x2="9" y2="12" />
+							</svg>
+						</button>
+					</form>
+				</div>
 			</div>
 		</div>
 	</div>
